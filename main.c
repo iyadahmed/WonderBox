@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-#include "nanogui.h"
+#include "NanoGUI/nanogui.h"
 
 typedef struct {
     float x;
