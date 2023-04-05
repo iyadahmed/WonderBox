@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.16)
 project(WonderBox)
 
 set(CMAKE_C_STANDARD 17)

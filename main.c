@@ -1,7 +1,10 @@
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "NanoGUI/nanogui.h"
+#include "hash.h"
 
 typedef struct {
     float x;
@@ -29,6 +32,12 @@ typedef struct {
     vec3_t color;
     float power;
 } point_light_t;
+
+struct vec3_uint32_hash_table_node_t {
+    vec3_t key;
+    uint32_t value;
+    struct vec3_uint32_hash_table_node_t *next;
+};
 
 static float vec3_length_squared(vec3_t v) {
     return v.x * v.x + v.y * v.y + v.z * v.z;
@@ -119,9 +128,81 @@ blinn_phong_shading(point_light_t pl, vec3_t surface_position, vec3_t surface_no
     return out;
 }
 
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        puts("Expected arguments: path/to/mesh.stl");
+        return 0;
+    }
+
+    const char *stl_mesh_filepath = argv[1];
+    FILE *stl_mesh_file = fopen(stl_mesh_filepath, "rb");
+    if (stl_mesh_filepath == NULL) {
+        puts("Failed to open file");
+        return 1;
+    }
+    if (fseek(stl_mesh_file, 80, SEEK_CUR) != 0) {
+        puts("Failed to seek");
+        return 1;
+    }
+    uint32_t num_tris = 0;
+    if (fread(&num_tris, sizeof(uint32_t), 1, stl_mesh_file) != 1) {
+        puts("Failed to read number of triangles");
+        return 1;
+    }
+
+    size_t num_max_unique_vertices = 3 * num_tris;
+    vec3_t *unique_vertices = malloc(num_max_unique_vertices * sizeof(vec3_t));
+    size_t num_unique_vertices = 0;
+
+    struct vec3_uint32_hash_table_node_t *preallocated_nodes = malloc(
+            num_max_unique_vertices * sizeof(struct vec3_uint32_hash_table_node_t));
+    size_t new_node_index = 0;
+
+    size_t num_buckets = 3 * num_tris;
+    struct vec3_uint32_hash_table_node_t **buckets = malloc(
+            num_buckets * sizeof(struct vec3_uint32_hash_table_node_t *));
+    for (size_t i = 0; i < 3 * num_tris; i++) {
+        buckets[i] = NULL;
+    }
+
+    for (size_t triangle_index = 0; triangle_index < num_tris; triangle_index++) {
+        vec3_t triangle_normal, triangle_vertices[3];
+        uint16_t attribute_byte_count;
+        if (fread(&triangle_normal, sizeof(vec3_t), 1, stl_mesh_file) != 1) {
+            puts("Failed to read normal");
+            return 1;
+        }
+        if (fread(&triangle_vertices, sizeof(vec3_t), 3, stl_mesh_file) != 3) {
+            puts("Failed to read vertices");
+            return 1;
+        }
+        if (fread(&attribute_byte_count, sizeof(uint16_t), 1, stl_mesh_file) != 1) {
+            puts("Failed to read attribute byte count");
+            return 1;
+        }
+        for (int triangle_vertex_index = 0; triangle_vertex_index < 3; triangle_vertex_index++) {
+            vec3_t vertex = triangle_vertices[triangle_vertex_index];
+            uint32_t vertex_hash = hash(vertex.x, vertex.y, vertex.z);
+            uint32_t bucket_index = vertex_hash % num_buckets;
+            if (buckets[bucket_index] == NULL) {
+                // Push new hash map node
+                buckets[bucket_index] = preallocated_nodes + (new_node_index++);
+                buckets[bucket_index]->next = NULL;
+                buckets[bucket_index]->key = vertex;
+
+                // Push new vertex to unique vertices array
+                size_t new_unique_vertex_index = num_unique_vertices++;
+                buckets[bucket_index]->value = new_unique_vertex_index;
+                unique_vertices[new_unique_vertex_index] = vertex;
+            }
+        }
+    }
+
     int width = 640, height = 480;
     nano_gui_create_fixed_size_window(width, height);
+
+    return 0;
 
     point_light_t light1;
     light1.power = 1.0f;
