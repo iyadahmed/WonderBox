@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
 
     const char *stl_mesh_filepath = argv[1];
     FILE *stl_mesh_file = fopen(stl_mesh_filepath, "rb");
-    if (stl_mesh_filepath == NULL) {
+    if (stl_mesh_file == NULL) {
         puts("Failed to open file");
         return 1;
     }
