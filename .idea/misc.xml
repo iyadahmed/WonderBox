@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.idea" />
+      <file path="$PROJECT_DIR$/build" />
+      <file path="$PROJECT_DIR$/cmake-build-debug-mingw" />
+      <file path="$PROJECT_DIR$/cmake-build-debug-wsl" />
+      <file path="$PROJECT_DIR$/cmake-build-minsizerel-mingw" />
+      <file path="$PROJECT_DIR$/cmake-build-minsizerel-wsl" />
+      <file path="$PROJECT_DIR$/cmake-build-release-mingw" />
+      <file path="$PROJECT_DIR$/cmake-build-release-wsl" />
+      <file path="$PROJECT_DIR$/cmake-build-relwithdebinfo-mingw" />
+      <file path="$PROJECT_DIR$/cmake-build-relwithdebinfo-wsl" />
+    </excludeRoots>
+  </component>
 </project>

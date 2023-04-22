@@ -199,10 +199,10 @@ int main(int argc, char **argv) {
         }
     }
 
+// TODO: build BVH
+
     int width = 640, height = 480;
     nano_gui_create_fixed_size_window(width, height);
-
-    return 0;
 
     point_light_t light1;
     light1.power = 1.0f;
